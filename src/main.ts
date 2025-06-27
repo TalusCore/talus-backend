@@ -1,7 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { MqttClientOptions } from '@nestjs/microservices/external/mqtt-options.interface';
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 const options: MqttClientOptions = {
   host: process.env.MQTT_URL,
@@ -13,15 +15,30 @@ const options: MqttClientOptions = {
 };
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    AppModule,
-    {
-      transport: Transport.MQTT,
-      options: options
-    }
-  );
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe());
 
-  await app.listen();
+  const config = new DocumentBuilder()
+    .setTitle('My API')
+    .setDescription('API docs for my NestJS app')
+    .setVersion('1.0')
+    .addTag('users')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
+  const port = process.env.PORT;
+  await app.listen(parseInt(port!, 10));
+  console.log(`HTTP server listening on ${port}`);
+
+  const microservice = app.connectMicroservice({
+    transport: Transport.MQTT,
+    options: options
+  });
+
+  await microservice.listen();
   console.log('MQTT Microservice listening...');
 }
 
