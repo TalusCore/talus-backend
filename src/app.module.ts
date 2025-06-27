@@ -33,9 +33,10 @@ import { UserModule } from './api/user/user.module';
       database: process.env.DB_NAME,
       entities: [__dirname + '/entities/*.entity{.ts,.js}'],
       synchronize: process.env.IS_DEVELOPMENT === 'true',
-      ssl: {
-        rejectUnauthorized: false
-      },
+      ssl:
+        process.env.IS_DEVELOPMENT === 'true'
+          ? { rejectUnauthorized: false }
+          : { rejectUnauthorized: true },
       logging:
         process.env.IS_DEVELOPMENT === 'true' ? ['query', 'error'] : false
     }),
