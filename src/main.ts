@@ -30,9 +30,12 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = process.env.PORT;
-  await app.listen(parseInt(port!, 10));
-  LogUtil.info(`HTTP server listening on ${port}`);
+  const port =
+    process.env.PORT && !isNaN(Number(process.env.PORT))
+      ? parseInt(process.env.PORT, 10)
+      : 3000;
+  await app.listen(port);
+  LogUtil.info(`HTTP server listening on port ${port}`);
 
   const microservice = app.connectMicroservice({
     transport: Transport.MQTT,
