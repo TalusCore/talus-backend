@@ -1,10 +1,11 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import { LogUtil } from 'src/utils/log.util';
 
 @Controller()
 export class MqttController {
   @MessagePattern('sensor/data')
   handleSensorData(@Payload() message: any) {
-    console.log('Received MQTT message:', message);
+    LogUtil.info('Received MQTT message:', message);
   }
 }

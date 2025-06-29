@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { MqttClientOptions } from '@nestjs/microservices/external/mqtt-options.interface';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { LogUtil } from './utils/log.util';
 
 const options: MqttClientOptions = {
   host: process.env.MQTT_URL,
@@ -31,7 +32,7 @@ async function bootstrap() {
 
   const port = process.env.PORT;
   await app.listen(parseInt(port!, 10));
-  console.log(`HTTP server listening on ${port}`);
+  LogUtil.info(`HTTP server listening on ${port}`);
 
   const microservice = app.connectMicroservice({
     transport: Transport.MQTT,
@@ -39,7 +40,7 @@ async function bootstrap() {
   });
 
   await microservice.listen();
-  console.log('MQTT Microservice listening...');
+  LogUtil.info('MQTT Microservice listening...');
 }
 
 bootstrap();

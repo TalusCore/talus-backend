@@ -12,8 +12,11 @@ export class User {
   @PrimaryGeneratedColumn('uuid', { name: 'user_id' })
   userId: string;
 
-  @Column({ type: 'text' })
-  name: string;
+  @Column({ name: 'first_name', type: 'text' })
+  firstName: string;
+
+  @Column({ name: 'last_name', type: 'text' })
+  lastName: string;
 
   @Column({ type: 'text', unique: true })
   email: string;
@@ -21,8 +24,8 @@ export class User {
   @Column({ type: 'text' })
   password: string;
 
-  @CreateDateColumn({ name: 'account_creation', type: 'timestamptz' })
-  accountCreation: Date;
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  createdAt: Date;
 
   @OneToMany(() => UserTalusRelation, (relation) => relation.user)
   talusRelations: UserTalusRelation[];

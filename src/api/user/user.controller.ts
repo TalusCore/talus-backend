@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UserLoginDto } from './dto/user-login.dto';
 import { UserInfoDto } from './dto/user-info.dto';
+import { LogUtil } from 'src/utils/log.util';
 
 @ApiTags('users')
 @Controller('users')
@@ -24,6 +25,7 @@ export class UserController {
   @ApiResponse({ status: 201, description: 'User created', type: UserInfoDto })
   @ApiResponse({ status: 409, description: 'Email already in use' })
   async signUp(@Body() data: CreateUserDto): Promise<UserInfoDto> {
+    LogUtil.info(`User registration attempt for email: ${data.email}`);
     const existingUser = await this.userService.findByEmail(data.email);
 
     if (existingUser) {
@@ -37,9 +39,10 @@ export class UserController {
     });
 
     return {
-      name: newUser.name,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
       email: newUser.email,
-      createdAt: newUser.accountCreation
+      createdAt: newUser.createdAt
     };
   }
 
@@ -61,14 +64,19 @@ export class UserController {
 
       if (isMatch) {
         return {
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
-          createdAt: user.accountCreation
+          createdAt: user.createdAt
         };
       }
+      LogUtil.error(
+        `Login attempt with invalid password for user: ${data.email}`
+      );
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    LogUtil.error(`Login attempt for non-existent user: ${data.email}`);
     throw new NotFoundException('User not found');
   }
 }
