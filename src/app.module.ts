@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MqttModule } from './mqtt/mqtt.module';
 import Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -20,25 +20,29 @@ import { UserModule } from './api/user/user.module';
         DB_USER: Joi.string().required(),
         DB_PASS: Joi.string().required(),
         DB_NAME: Joi.string().required(),
-        IS_DEVELOPMENT: Joi.boolean().default(false)
-      })
+        IS_DEV: Joi.boolean().default(false)
+      }),
+      validationOptions: {
+        abortEarly: false
+      }
     }),
     MqttModule,
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT!, 10),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
-      entities: [__dirname + '/entities/*.entity{.ts,.js}'],
-      synchronize: process.env.IS_DEVELOPMENT === 'true',
-      ssl:
-        process.env.IS_DEVELOPMENT === 'true'
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get<string>('DB_HOST'),
+        port: config.get<number>('DB_PORT'),
+        username: config.get<string>('DB_USER'),
+        password: config.get<string>('DB_PASS'),
+        database: config.get<string>('DB_NAME'),
+        entities: [__dirname + '/entities/*.entity{.ts,.js}'],
+        synchronize: config.get<boolean>('IS_DEV'),
+        ssl: config.get<boolean>('IS_DEV')
           ? { rejectUnauthorized: false }
           : { rejectUnauthorized: true },
-      logging:
-        process.env.IS_DEVELOPMENT === 'true' ? ['query', 'error'] : false
+        logging: config.get<boolean>('IS_DEV') ? ['query', 'error'] : false
+      })
     }),
     UserModule
   ],

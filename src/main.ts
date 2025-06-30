@@ -5,20 +5,15 @@ import { MqttClientOptions } from '@nestjs/microservices/external/mqtt-options.i
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { LogUtil } from './utils/log.util';
-
-const options: MqttClientOptions = {
-  host: process.env.MQTT_URL,
-  port: parseInt(process.env.MQTT_PORT!),
-  clientId: 'nestjs_mqtt_client',
-  protocol: 'mqtts' as const,
-  username: process.env.MQTT_USERNAME,
-  password: process.env.MQTT_PASSWORD
-};
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
+  const configService = app.get(ConfigService);
+
+  LogUtil.setIsDevelopment(configService.get<boolean>('IS_DEVELOPMENT')!);
 
   const config = new DocumentBuilder()
     .setTitle('My API')
@@ -30,19 +25,25 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port =
-    process.env.PORT && !isNaN(Number(process.env.PORT))
-      ? parseInt(process.env.PORT, 10)
-      : 3000;
-  await app.listen(port);
-  LogUtil.info(`HTTP server listening on port ${port}`);
+  const port = configService.get<number>('PORT') || 3000;
 
-  const microservice = app.connectMicroservice({
+  const options: MqttClientOptions = {
+    host: configService.get<string>('MQTT_URL')!,
+    port: configService.get<number>('MQTT_PORT')!,
+    clientId: 'nestjs_mqtt_client',
+    protocol: 'mqtts' as const,
+    username: configService.get<string>('MQTT_USERNAME')!,
+    password: configService.get<string>('MQTT_PASSWORD')!
+  };
+
+  app.connectMicroservice({
     transport: Transport.MQTT,
     options: options
   });
 
-  await microservice.listen();
+  await app.startAllMicroservices();
+  await app.listen(port);
+  LogUtil.info(`HTTP server listening on port ${port}`);
   LogUtil.info('MQTT Microservice listening...');
 }
 
