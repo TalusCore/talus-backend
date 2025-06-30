@@ -13,7 +13,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   const configService = app.get(ConfigService);
 
-  LogUtil.setIsDevelopment(configService.get<boolean>('IS_DEVELOPMENT')!);
+  LogUtil.setIsDevelopment(configService.get<boolean>('IS_DEV')!);
 
   const config = new DocumentBuilder()
     .setTitle('My API')
@@ -44,7 +44,7 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(port);
   LogUtil.info(
-    `Running in ${configService.get<string>('IS_DEVELOPMENT') ? 'development' : 'production'} mode`
+    `Running in ${configService.get<string>('IS_DEV') ? 'development' : 'production'} mode`
   );
   LogUtil.info(`HTTP server listening on port ${port}`);
   LogUtil.info('MQTT Microservice listening...');
