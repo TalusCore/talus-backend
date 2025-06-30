@@ -54,10 +54,12 @@ export class TalusController {
       name: data.name
     };
 
-    const talus = await this.talusService.createTalus(talusData);
+    let talus;
 
-    if (!talus) {
-      LogUtil.error('Failed to create Talus device');
+    try {
+      talus = await this.talusService.createTalus(talusData);
+    } catch (error) {
+      LogUtil.error(`Failed to create Talus device: ${error.message}`);
       throw new ConflictException('Failed to create Talus device');
     }
 
@@ -65,13 +67,13 @@ export class TalusController {
       userId: existingUser.userId,
       talusId: talus.talusId
     };
-    const userTalusRelation =
+
+    try {
       await this.userTalusRelationService.createUserTalusRelation(
         userTalusRelationData
       );
-
-    if (!userTalusRelation) {
-      LogUtil.error('Failed to create user-talus relation');
+    } catch (error) {
+      LogUtil.error(`Failed to create user-talus relation: ${error.message}`);
       throw new ConflictException('Failed to create user-talus relation');
     }
 

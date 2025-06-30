@@ -8,17 +8,17 @@ import { RegisterTalusDto } from './dto/register-talus.dto';
 export class TalusService {
   constructor(
     @InjectRepository(Talus)
-    private readonly TalusRepository: Repository<Talus>
+    private readonly talusRepository: Repository<Talus>
   ) {}
 
   async getTalusById(talusId: string): Promise<Talus | null> {
-    return this.TalusRepository.findOne({
+    return this.talusRepository.findOne({
       where: { talusId }
     });
   }
 
   async createTalus(talusData: RegisterTalusDto): Promise<Talus> {
-    const talus = this.TalusRepository.create(talusData);
-    return this.TalusRepository.save(talus);
+    const talus = this.talusRepository.create(talusData);
+    return this.talusRepository.save(talus);
   }
 }

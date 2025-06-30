@@ -8,13 +8,13 @@ import { CreateUserTalusRelationDto } from './dto/create-user-talus-relation.dto
 export class UserTalusRelationService {
   constructor(
     @InjectRepository(UserTalusRelation)
-    private readonly UserTalusRelationRepository: Repository<UserTalusRelation>
+    private readonly userTalusRelationRepository: Repository<UserTalusRelation>
   ) {}
 
   async createUserTalusRelation(
     relationData: CreateUserTalusRelationDto
   ): Promise<UserTalusRelation> {
-    const relation = this.UserTalusRelationRepository.create(relationData);
-    return this.UserTalusRelationRepository.save(relation);
+    const relation = this.userTalusRelationRepository.create(relationData);
+    return this.userTalusRelationRepository.save(relation);
   }
 }
