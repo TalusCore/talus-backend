@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { LogUtil } from 'src/utils/log.util';
+import { LogUtil } from '../utils/log.util';
 
 @Controller()
 export class MqttController {
