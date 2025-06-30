@@ -43,6 +43,9 @@ async function bootstrap() {
 
   await app.startAllMicroservices();
   await app.listen(port);
+  LogUtil.info(
+    `Running in ${configService.get<string>('IS_DEVELOPMENT') ? 'development' : 'production'} mode`
+  );
   LogUtil.info(`HTTP server listening on port ${port}`);
   LogUtil.info('MQTT Microservice listening...');
 }
