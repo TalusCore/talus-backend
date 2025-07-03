@@ -5,8 +5,12 @@ export const setIsDevelopment = (value: boolean) => {
 };
 
 const errorLog = (...args: unknown[]) => {
+  console.error('Error:', ...args);
+};
+
+const warnLog = (...args: unknown[]) => {
   if (isDev) {
-    console.error('Error:', ...args);
+    console.warn('Warning:', ...args);
   }
 };
 
@@ -19,5 +23,6 @@ const infoLog = (...args: unknown[]) => {
 export const LogUtil = {
   setIsDevelopment,
   error: errorLog,
+  warn: warnLog,
   info: infoLog
 };
