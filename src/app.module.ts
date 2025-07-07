@@ -22,7 +22,8 @@ import { UserTalusRelationModule } from './api/user-talus-relation/user-talus-re
         DB_USER: Joi.string().required(),
         DB_PASS: Joi.string().required(),
         DB_NAME: Joi.string().required(),
-        IS_DEV: Joi.boolean().default(false)
+        IS_DEV: Joi.boolean().default(false),
+        VERBOSE: Joi.boolean().default(false)
       }),
       validationOptions: {
         abortEarly: false
@@ -44,7 +45,10 @@ import { UserTalusRelationModule } from './api/user-talus-relation/user-talus-re
           ssl: config.get<boolean>('IS_DEV')
             ? false
             : { rejectUnauthorized: false },
-          logging: config.get<boolean>('IS_DEV') ? ['query', 'error'] : false
+          logging:
+            config.get<boolean>('IS_DEV') && config.get<boolean>('VERBOSE')
+              ? ['query', 'error']
+              : ['error']
         };
       }
     }),
