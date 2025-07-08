@@ -17,4 +17,22 @@ export class UserTalusRelationService {
     const relation = this.userTalusRelationRepository.create(relationData);
     return this.userTalusRelationRepository.save(relation);
   }
+
+  async findMostRecentRelationByUserId(
+    userId: string
+  ): Promise<UserTalusRelation | null> {
+    return this.userTalusRelationRepository.findOne({
+      where: { user: { userId: userId } },
+      relations: ['talus'],
+      order: { pairingDate: 'DESC' }
+    });
+  }
+
+  async getAllRelationsByUserId(userId: string): Promise<UserTalusRelation[]> {
+    return this.userTalusRelationRepository.find({
+      where: { user: { userId: userId } },
+      relations: ['talus'],
+      order: { pairingDate: 'DESC' }
+    });
+  }
 }
