@@ -1,4 +1,4 @@
-import { Controller, Body, Get, NotFoundException } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { LogUtil } from 'src/utils/log.util';
 import { StatService } from './stat.service';
@@ -28,7 +28,7 @@ export class StatController {
     status: 404,
     description: 'Talus not found'
   })
-  async fetchStats(@Body() data: GetStatsDto): Promise<FetchedStatDto[]> {
+  async fetchStats(@Query() data: GetStatsDto): Promise<FetchedStatDto[]> {
     const existingTalus = await this.talusService.getTalusById(data.talusId);
 
     if (!existingTalus) {
