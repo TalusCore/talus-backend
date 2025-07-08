@@ -1,28 +1,53 @@
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { MqttClientOptions } from '@nestjs/microservices/external/mqtt-options.interface';
-
-const options: MqttClientOptions = {
-  host: process.env.MQTT_URL,
-  port: parseInt(process.env.MQTT_PORT!),
-  clientId: 'nestjs_mqtt_client',
-  protocol: 'mqtts' as const,
-  username: process.env.MQTT_USERNAME,
-  password: process.env.MQTT_PASSWORD
-};
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { LogUtil } from './utils/log.util';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    AppModule,
-    {
-      transport: Transport.MQTT,
-      options: options
-    }
-  );
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe());
+  const configService = app.get(ConfigService);
 
-  await app.listen();
-  console.log('MQTT Microservice listening...');
+  LogUtil.setIsDevelopment(configService.get<boolean>('IS_DEV')!);
+
+  const config = new DocumentBuilder()
+    .setTitle('My API')
+    .setDescription('API docs for my NestJS app')
+    .setVersion('1.0')
+    .addTag('users')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
+  const port = configService.get<number>('PORT') || 3000;
+
+  const options: MqttClientOptions = {
+    host: configService.get<string>('MQTT_URL')!,
+    port: configService.get<number>('MQTT_PORT')!,
+    clientId: 'nestjs_mqtt_client',
+    protocol: 'mqtts' as const,
+    username: configService.get<string>('MQTT_USERNAME')!,
+    password: configService.get<string>('MQTT_PASSWORD')!
+  };
+
+  app.connectMicroservice({
+    transport: Transport.MQTT,
+    options: options
+  });
+
+  await app.startAllMicroservices();
+  await app.listen(port);
+  LogUtil.info(
+    `Running in ${configService.get<string>('IS_DEV') ? 'development' : 'production'} mode`
+  );
+  LogUtil.info(`HTTP server listening on port ${port}`);
+  LogUtil.info('MQTT Microservice listening...');
 }
 
 bootstrap();
