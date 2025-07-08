@@ -4,6 +4,8 @@ import { MqttModule } from './mqtt/mqtt.module';
 import Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './api/user/user.module';
+import { TalusModule } from './api/talus/talus.module';
+import { UserTalusRelationModule } from './api/user-talus-relation/user-talus-relation.module';
 
 @Module({
   imports: [
@@ -46,7 +48,9 @@ import { UserModule } from './api/user/user.module';
         };
       }
     }),
-    UserModule
+    UserModule,
+    TalusModule,
+    UserTalusRelationModule
   ],
   controllers: [],
   providers: []
