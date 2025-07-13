@@ -5,7 +5,9 @@ import {
   NotFoundException,
   ConflictException,
   Get,
-  Query
+  Query,
+  Delete,
+  Put
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { LogUtil } from 'src/utils/log.util';
@@ -104,5 +106,50 @@ export class TalusController {
       email: data.email,
       talusName: talus.name
     };
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Delete a Talus device by ID' })
+  @ApiResponse({
+    status: 204,
+    description: 'Talus device deleted successfully'
+  })
+  @ApiResponse({ status: 404, description: 'Talus device not found' })
+  async deleteTalus(@Query('talusId') talusId: string): Promise<void> {
+    const talus = await this.talusService.getTalusById(talusId);
+
+    if (!talus) {
+      LogUtil.error(`Talus device not found: ${talusId}`);
+      throw new NotFoundException('Talus device not found');
+    }
+
+    await this.talusService.deleteTalus(talusId);
+    LogUtil.info(`Talus device deleted successfully: ${talusId}`);
+  }
+
+  @Put()
+  @ApiOperation({ summary: 'Rename a Talus device' })
+  @ApiBody({ type: RegisterTalusDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Talus device renamed successfully',
+    type: RegisterTalusDto
+  })
+  @ApiResponse({ status: 404, description: 'Talus device not found' })
+  async renameTalus(@Body() data: RegisterTalusDto): Promise<RegisterTalusDto> {
+    const talus = await this.talusService.getTalusById(data.talusId);
+
+    if (!talus) {
+      LogUtil.error(`Talus device not found: ${data.talusId}`);
+      throw new NotFoundException('Talus device not found');
+    }
+
+    const updatedTalus = await this.talusService.renameTalus(
+      data.talusId,
+      data.name
+    );
+
+    LogUtil.info(`Talus device renamed successfully: ${data.talusId}`);
+    return updatedTalus;
   }
 }
