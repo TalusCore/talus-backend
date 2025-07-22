@@ -7,7 +7,8 @@ import {
   Get,
   Query,
   Delete,
-  Put
+  Put,
+  HttpCode
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { LogUtil } from 'src/utils/log.util';
@@ -109,6 +110,7 @@ export class TalusController {
   }
 
   @Delete()
+  @HttpCode(204)
   @ApiOperation({ summary: 'Delete a Talus device by ID' })
   @ApiResponse({
     status: 204,
