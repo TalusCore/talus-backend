@@ -3,7 +3,9 @@ import {
   Post,
   Body,
   NotFoundException,
-  ConflictException
+  ConflictException,
+  Get,
+  Query
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { LogUtil } from 'src/utils/log.util';
@@ -23,6 +25,27 @@ export class TalusController {
     private readonly userService: UserService,
     private readonly userTalusRelationService: UserTalusRelationService
   ) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Get Talus device by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Talus device found',
+    type: RegisterTalusDto
+  })
+  @ApiResponse({ status: 404, description: 'Talus device not found' })
+  async getTalusById(
+    @Query('talusId') talusId: string
+  ): Promise<RegisterTalusDto> {
+    const talus = await this.talusService.getTalusById(talusId);
+
+    if (!talus) {
+      LogUtil.error(`Talus device not found: ${talusId}`);
+      throw new NotFoundException('Talus device not found');
+    }
+
+    return talus;
+  }
 
   @Post()
   @ApiOperation({ summary: 'Pair a Talus device with a user' })
