@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Stat } from 'src/entities/stat.entity';
-import { Repository, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { Repository, MoreThanOrEqual, Between } from 'typeorm';
 import { CreateStatDto } from './dto/create-stat.dto';
 import { CreateStatObjectDto } from './dto/create-stat-object.dto';
 
@@ -41,8 +41,7 @@ export class StatService {
       where: {
         statName,
         talusId,
-        timestamp:
-          MoreThanOrEqual(startDateTime) && LessThanOrEqual(endDateTime)
+        timestamp: Between(startDateTime, endDateTime)
       },
       order: { timestamp: 'DESC' }
     });
