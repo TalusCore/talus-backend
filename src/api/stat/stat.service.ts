@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Stat } from 'src/entities/stat.entity';
-import { Repository, MoreThanOrEqual } from 'typeorm';
+import { Repository, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { CreateStatDto } from './dto/create-stat.dto';
 import { CreateStatObjectDto } from './dto/create-stat-object.dto';
 
@@ -17,6 +17,32 @@ export class StatService {
       where: {
         talusId,
         timestamp: MoreThanOrEqual(startDateTime)
+      },
+      order: { timestamp: 'DESC' }
+    });
+  }
+
+  async getStatNamesByTalus(talusId: string): Promise<string[]> {
+    const statNames = await this.statRepository
+      .createQueryBuilder('stat')
+      .select('DISTINCT stat.statName', 'statName')
+      .where('stat.talusId = :talusId', { talusId })
+      .getRawMany();
+    return statNames.map((record) => record.statName);
+  }
+
+  async getStatsByNameAndTalus(
+    statName: string,
+    talusId: string,
+    startDateTime: Date,
+    endDateTime: Date
+  ): Promise<Stat[]> {
+    return this.statRepository.find({
+      where: {
+        statName,
+        talusId,
+        timestamp:
+          MoreThanOrEqual(startDateTime) && LessThanOrEqual(endDateTime)
       },
       order: { timestamp: 'DESC' }
     });
