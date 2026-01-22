@@ -119,8 +119,8 @@ export class StatController {
     }
 
     const stats = await this.statService.getStatsByNameAndTalus(
-      data.talusId,
       data.statName,
+      data.talusId,
       data.startTime,
       data.endTime
     );
