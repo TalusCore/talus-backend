@@ -24,6 +24,18 @@ export class User {
   @Column({ type: 'text' })
   password: string;
 
+  @Column({ type: 'date' })
+  birthday: Date;
+
+  @Column({ type: 'double precision' })
+  height: number;
+
+  @Column({ type: 'double precision' })
+  weight: number;
+
+  @Column({ type: 'text' })
+  gender: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 

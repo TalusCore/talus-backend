@@ -19,4 +19,12 @@ export class UserService {
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { email } });
   }
+
+  async editUser(
+    userId: string,
+    updateData: Partial<CreateUserDto>
+  ): Promise<User | null> {
+    await this.userRepository.update(userId, updateData);
+    return this.userRepository.findOne({ where: { userId } });
+  }
 }

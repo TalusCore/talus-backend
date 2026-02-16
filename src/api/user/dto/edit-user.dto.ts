@@ -8,7 +8,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
-export class CreateUserDto {
+export class EditUserDto {
   @ApiProperty({
     example: 'John',
     description: 'The first name of the user'
@@ -31,14 +31,6 @@ export class CreateUserDto {
   })
   @IsEmail()
   email: string;
-
-  @ApiProperty({
-    example: 'StrongPassword123!',
-    description: "The password for the user's account"
-  })
-  @IsNotEmpty()
-  @IsString()
-  password: string;
 
   @ApiProperty({
     example: '2000-01-01',
