@@ -105,17 +105,6 @@ export class StatController {
     description: 'Talus not found'
   })
   async fetchMLInsights(@Query() data: GetMLParamsDto): Promise<string> {
-    const existingTalus = await this.talusService.getTalusById(data.talusId);
-
-    if (!existingTalus) {
-      LogUtil.error(
-        `Talus with ID ${data.talusId} not found. Cannot fetch ML insights.`
-      );
-      throw new NotFoundException(
-        `Talus with ID ${data.talusId} not found. Cannot fetch ML insights.`
-      );
-    }
-
     const mlParams = await this.statService.getMLParams(data);
 
     const mlInsights = await this.statService.getMLInsights(
@@ -130,7 +119,6 @@ export class StatController {
       mlParams.fitness_level
     );
 
-    LogUtil.info(`Fetched ML insights for Talus with ID ${data.talusId}.`);
     return mlInsights;
   }
 }
