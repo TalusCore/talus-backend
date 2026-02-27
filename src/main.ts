@@ -11,6 +11,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
+  app.enableCors({
+    origin: true,
+    credentials: true
+  });
+
   const configService = app.get(ConfigService);
 
   LogUtil.setIsDevelopment(configService.get<boolean>('IS_DEV')!);

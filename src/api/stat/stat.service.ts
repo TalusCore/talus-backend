@@ -12,13 +12,18 @@ export class StatService {
     private readonly statRepository: Repository<Stat>
   ) {}
 
-  async getStatsByTalus(talusId: string, startDateTime: Date): Promise<Stat[]> {
+  async getStatsByTalus(
+    talusId: string,
+    startDateTime: Date,
+    limit: number = 1000
+  ): Promise<Stat[]> {
     return this.statRepository.find({
       where: {
         talusId,
         timestamp: MoreThanOrEqual(startDateTime)
       },
-      order: { timestamp: 'DESC' }
+      order: { timestamp: 'DESC' },
+      take: limit
     });
   }
 
@@ -35,7 +40,8 @@ export class StatService {
     statName: string,
     talusId: string,
     startDateTime: Date,
-    endDateTime: Date
+    endDateTime: Date,
+    limit: number = 1000
   ): Promise<Stat[]> {
     return this.statRepository.find({
       where: {
@@ -43,7 +49,8 @@ export class StatService {
         talusId,
         timestamp: Between(startDateTime, endDateTime)
       },
-      order: { timestamp: 'DESC' }
+      order: { timestamp: 'DESC' },
+      take: limit
     });
   }
 

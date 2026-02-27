@@ -1,4 +1,12 @@
-import { IsDate, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsInt,
+  Min,
+  Max
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -36,4 +44,17 @@ export class GetStatsByNameRangeDto {
   @Type(() => Date)
   @IsDate()
   endTime: Date;
+
+  @ApiProperty({
+    example: 1000,
+    description:
+      'Maximum number of stats to return (default: 1000, max: 10000)',
+    required: false
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(10000)
+  limit?: number = 1000;
 }

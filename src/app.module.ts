@@ -48,7 +48,13 @@ import { UserTalusRelationModule } from './api/user-talus-relation/user-talus-re
           logging:
             config.get<boolean>('IS_DEV') && config.get<boolean>('VERBOSE')
               ? ['query', 'error']
-              : ['error']
+              : ['error'],
+          extra: {
+            max: 20,
+            min: 5,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 10000
+          }
         };
       }
     }),

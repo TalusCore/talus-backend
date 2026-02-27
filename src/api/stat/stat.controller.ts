@@ -27,7 +27,8 @@ export class StatController {
   async fetchStats(@Query() data: GetStatsDto): Promise<FetchedStatDto[]> {
     const stats = await this.statService.getStatsByTalus(
       data.talusId,
-      data.startTime
+      data.startTime,
+      data.limit || 1000
     );
 
     return stats.map((stat) => ({
@@ -78,7 +79,8 @@ export class StatController {
       data.statName,
       data.talusId,
       data.startTime,
-      data.endTime
+      data.endTime,
+      data.limit || 1000
     );
 
     return stats.map((stat) => ({
