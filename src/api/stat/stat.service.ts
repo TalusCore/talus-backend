@@ -17,13 +17,18 @@ export class StatService {
     private readonly httpService: HttpService
   ) {}
 
-  async getStatsByTalus(talusId: string, startDateTime: Date): Promise<Stat[]> {
+  async getStatsByTalus(
+    talusId: string,
+    startDateTime: Date,
+    limit: number = 1000
+  ): Promise<Stat[]> {
     return this.statRepository.find({
       where: {
         talusId,
         timestamp: MoreThanOrEqual(startDateTime)
       },
-      order: { timestamp: 'DESC' }
+      order: { timestamp: 'DESC' },
+      take: limit
     });
   }
 
@@ -32,6 +37,7 @@ export class StatService {
       .createQueryBuilder('stat')
       .select('DISTINCT stat.statName', 'statName')
       .where('stat.talusId = :talusId', { talusId })
+      .cache(true)
       .getRawMany();
     return statNames.map((record) => record.statName);
   }
@@ -40,7 +46,8 @@ export class StatService {
     statName: string,
     talusId: string,
     startDateTime: Date,
-    endDateTime: Date
+    endDateTime: Date,
+    limit: number = 1000
   ): Promise<Stat[]> {
     return this.statRepository.find({
       where: {
@@ -48,20 +55,23 @@ export class StatService {
         talusId,
         timestamp: Between(startDateTime, endDateTime)
       },
-      order: { timestamp: 'DESC' }
+      order: { timestamp: 'DESC' },
+      take: limit
     });
   }
 
   async getStatByNameAndTalusAllTime(
     statName: string,
-    talusId: string
+    talusId: string,
+    limit: number = 10000
   ): Promise<Stat[]> {
     return this.statRepository.find({
       where: {
         statName,
         talusId
       },
-      order: { timestamp: 'DESC' }
+      order: { timestamp: 'DESC' },
+      take: limit
     });
   }
 
@@ -75,12 +85,8 @@ export class StatService {
       })
     );
 
-    const newStats = statsArray.map((stat) => {
-      const newStat = this.statRepository.create(stat);
-      return this.statRepository.save(newStat);
-    });
-
-    return Promise.all(newStats);
+    const newStats = this.statRepository.create(statsArray);
+    return this.statRepository.save(newStats);
   }
 
   async getExerciseMinutesPerDay(
@@ -118,21 +124,39 @@ export class StatService {
     talusId: string,
     avgHeartRate: number
   ): Promise<number> {
+    const today = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const heartRateData = await this.getStatsByNameAndTalus(
+      'bpm',
+      talusId,
+      sevenDaysAgo,
+      endOfToday
+    );
+
+    const dayMap = new Map<string, Set<string>>();
+
+    heartRateData
+      .filter((stat) => stat.value > avgHeartRate)
+      .forEach((stat) => {
+        const date = new Date(stat.timestamp);
+        const dayKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        const minuteKey = `${date.getHours()}:${date.getMinutes()}`;
+
+        if (!dayMap.has(dayKey)) {
+          dayMap.set(dayKey, new Set());
+        }
+        dayMap.get(dayKey)!.add(minuteKey);
+      });
+
     let workoutFreq = 0;
-
-    for (let i = 0; i < 7; i++) {
-      const today = new Date();
-      const selectedDate = new Date();
-      selectedDate.setDate(today.getDate() - i);
-
-      const exerciseMinutes = await this.getExerciseMinutesPerDay(
-        talusId,
-        avgHeartRate,
-        selectedDate
-      );
-
-      workoutFreq += Math.floor(exerciseMinutes / 30);
-    }
+    dayMap.forEach((minutes) => {
+      workoutFreq += Math.floor(minutes.size / 30);
+    });
 
     return workoutFreq;
   }

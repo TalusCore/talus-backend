@@ -5,6 +5,7 @@ import Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './api/user/user.module';
 import { TalusModule } from './api/talus/talus.module';
+import { StatModule } from './api/stat/stat.module';
 import { UserTalusRelationModule } from './api/user-talus-relation/user-talus-relation.module';
 
 @Module({
@@ -48,12 +49,19 @@ import { UserTalusRelationModule } from './api/user-talus-relation/user-talus-re
           logging:
             config.get<boolean>('IS_DEV') && config.get<boolean>('VERBOSE')
               ? ['query', 'error']
-              : ['error']
+              : ['error'],
+          extra: {
+            max: 20,
+            min: 5,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 10000
+          }
         };
       }
     }),
     UserModule,
     TalusModule,
+    StatModule,
     UserTalusRelationModule
   ],
   controllers: [],
