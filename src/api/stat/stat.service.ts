@@ -61,14 +61,16 @@ export class StatService {
 
   async getStatByNameAndTalusAllTime(
     statName: string,
-    talusId: string
+    talusId: string,
+    limit: number = 10000
   ): Promise<Stat[]> {
     return this.statRepository.find({
       where: {
         statName,
         talusId
       },
-      order: { timestamp: 'DESC' }
+      order: { timestamp: 'DESC' },
+      take: limit
     });
   }
 

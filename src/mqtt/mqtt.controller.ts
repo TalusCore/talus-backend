@@ -10,20 +10,31 @@ export class MqttController {
   @MessagePattern('sensor/data')
   async handleSensorData(@Payload() message: any) {
     try {
-      const jsonMsg = JSON.parse(message);
+      const jsonMsg =
+        typeof message === 'string' ? JSON.parse(message) : message;
 
       if (!jsonMsg.talusId || !jsonMsg.stats || !jsonMsg.timestamp) {
         LogUtil.warn('Invalid message format:', jsonMsg);
         return;
       }
 
+      const timestamp = new Date(jsonMsg.timestamp);
+      if (isNaN(timestamp.getTime())) {
+        LogUtil.warn('Invalid timestamp in message:', jsonMsg.timestamp);
+        return;
+      }
+
       await this.statService.createStats({
         talusId: jsonMsg.talusId,
         stats: jsonMsg.stats,
-        timestamp: new Date(jsonMsg.timestamp)
+        timestamp
       });
     } catch (error) {
-      LogUtil.error('Error saving stats:', error);
+      if (error instanceof SyntaxError) {
+        LogUtil.error('JSON parse error:', error.message);
+      } else {
+        LogUtil.error('Error saving stats:', error);
+      }
     }
   }
 }
