@@ -37,6 +37,7 @@ export class StatService {
       .createQueryBuilder('stat')
       .select('DISTINCT stat.statName', 'statName')
       .where('stat.talusId = :talusId', { talusId })
+      .cache(true)
       .getRawMany();
     return statNames.map((record) => record.statName);
   }
