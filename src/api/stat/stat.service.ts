@@ -123,21 +123,39 @@ export class StatService {
     talusId: string,
     avgHeartRate: number
   ): Promise<number> {
+    const today = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const heartRateData = await this.getStatsByNameAndTalus(
+      'bpm',
+      talusId,
+      sevenDaysAgo,
+      endOfToday
+    );
+
+    const dayMap = new Map<string, Set<string>>();
+
+    heartRateData
+      .filter((stat) => stat.value > avgHeartRate)
+      .forEach((stat) => {
+        const date = new Date(stat.timestamp);
+        const dayKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        const minuteKey = `${date.getHours()}:${date.getMinutes()}`;
+
+        if (!dayMap.has(dayKey)) {
+          dayMap.set(dayKey, new Set());
+        }
+        dayMap.get(dayKey)!.add(minuteKey);
+      });
+
     let workoutFreq = 0;
-
-    for (let i = 0; i < 7; i++) {
-      const today = new Date();
-      const selectedDate = new Date();
-      selectedDate.setDate(today.getDate() - i);
-
-      const exerciseMinutes = await this.getExerciseMinutesPerDay(
-        talusId,
-        avgHeartRate,
-        selectedDate
-      );
-
-      workoutFreq += Math.floor(exerciseMinutes / 30);
-    }
+    dayMap.forEach((minutes) => {
+      workoutFreq += Math.floor(minutes.size / 30);
+    });
 
     return workoutFreq;
   }
