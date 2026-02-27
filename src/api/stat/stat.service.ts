@@ -57,11 +57,7 @@ export class StatService {
       })
     );
 
-    const newStats = statsArray.map((stat) => {
-      const newStat = this.statRepository.create(stat);
-      return this.statRepository.save(newStat);
-    });
-
-    return Promise.all(newStats);
+    const newStats = this.statRepository.create(statsArray);
+    return this.statRepository.save(newStats);
   }
 }
